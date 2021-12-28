@@ -1,0 +1,52 @@
+const path = require('path')
+const HtmlWebapckPlugin = require('html-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
+
+module.exports = {
+    mode: 'development', // 选择打包模式 development，production
+    entry: { // 入口文件
+        main: './src/index.js' // 入口文件地址
+    },
+    module: { //模块
+        rules: [ // 规则
+            {
+                test: /\.(jpg|png|gif)$/, // 打包图片静态资源
+                use: {
+                    loader: 'url-loader', // 使用file-loader打包jpg图片  url-loader能实现file-loader的所有功能，将图片打包成base64
+                    options: { //额外配置项
+                        // placeholder，占位符，具体参考 https://v4.webpack.docschina.org/loaders/file-loader/
+                        name: '[name]-[hash].[ext]', // 打包后的名称，name为图片原始名称，ext为图片原始格式后缀
+                        outputPath:'images/', //打包输出路径
+                        publicPath: path.join(__dirname,'./dist/images/'), //引用打包输出路径，使用绝对路径，否则会在html相对路径下寻找
+                        limit: 2048 // 大于2048字节，即2KB，小于2KB打包成base64，大于2KB会被打包进dist
+                    }
+                }
+            },
+            {
+                test: /\.css$/, // 打包图片静态资源
+                use: [                 // 打包需要同时使用两个loader,css-loader会分析几个css文件之间的引用关系，进而打包。
+                    'style-loader',    // style-loader是打包后将css挂在到header上,数组内loader执行顺序的从后向前
+                    {
+                        loader:'css-loader', // css-loader 打包css
+                        options: {
+                            importLoaders:2, //通过import引入的文件，在此之前要被前两个loader打包一遍
+                            //modules:true   // CSS 模块化
+                        }
+                    },      
+                    'postcss-loader'   // post-loader 自动增加厂商前缀，用来支持css新特性,需要postcss.config.js配置文件
+                ]
+            },
+        ]
+    },
+    plugins:[
+        new HtmlWebapckPlugin({
+            template:'src/view/index.html' // 模板文件
+        }), // 会在打包结束后，自动生成一个html文件，并把大后生成的js引入到这个html文件中
+        new CleanWebpackPlugin(['dist']) // 每次打包之前，把dist目录先删除
+    ],
+    output: { // 出口文件
+        // publicPath: 'http://cdn.com.cn/'  会在html模板中，引入的js的地址前生成前缀
+        filename: 'bundle.js', // 文件名，这里可以使用占位符
+        path: path.join(__dirname, 'dist') // 打包出口地址
+    }
+}
