@@ -13,6 +13,14 @@ module.exports = {
     entry: { // 入口文件
         main: './src/index.js' // 入口文件地址
     },
+    devServer: {
+        contentBase:'./dist',
+        open: true, // 会自动的打开浏览器
+        port: 5589, // webpack服务启动端口
+        // proxy:{ // 跨域代理
+        //     'api':'http:127.0.0.1:3000'
+        // }
+    },
     module: { //模块
         rules: [ // 规则
             {
@@ -22,8 +30,8 @@ module.exports = {
                     options: { //额外配置项
                         // placeholder，占位符，具体参考 https://v4.webpack.docschina.org/loaders/file-loader/
                         name: '[name]-[hash].[ext]', // 打包后的名称，name为图片原始名称，ext为图片原始格式后缀
-                        outputPath:'images/', //打包输出路径
-                        publicPath: path.join(__dirname,'./dist/images/'), //引用打包输出路径，使用绝对路径，否则会在html相对路径下寻找
+                        outputPath:'./images/', //打包输出路径
+                        //publicPath: path.join(__dirname,'./dist/images/'), //引用打包输出路径，使用绝对路径，否则会在html相对路径下寻找
                         limit: 2048 // 大于2048字节，即2KB，小于2KB打包成base64，大于2KB会被打包进dist
                     }
                 }
@@ -46,12 +54,13 @@ module.exports = {
     },
     plugins:[
         new HtmlWebapckPlugin({
-            template:'src/view/index.html' // 模板文件
+            template:'src/view/index.html', // 模板文件
+            cache: false // 关闭内存
         }), // 会在打包结束后，自动生成一个html文件，并把大后生成的js引入到这个html文件中
         new CleanWebpackPlugin(['dist']) // 每次打包之前，把dist目录先删除
     ],
     output: { // 出口文件
-        // publicPath: 'http://cdn.com.cn/'  会在html模板中，引入的js的地址前生成前缀
+        publicPath: '/',  //会在html模板中，引入的js的地址前生成前缀
         filename: 'bundle.js', // 文件名，这里可以使用占位符
         path: path.join(__dirname, 'dist') // 打包出口地址
     }
